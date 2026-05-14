@@ -169,6 +169,57 @@ main:
 # (in)     a2: maximum number of bytes to read
 read_file:
     # TODO
+    # Read from a text file into a buffer.
+# (in)     a0: filename address (char*)
+# (in/out) a1: destination buffer
+# (in)     a2: maximum number of bytes to read
+read_file:
+    # TODO
+    # guardar ra e registos na pilha
+    addi sp, sp, -20
+    sw ra, 0(sp)
+    sw t0, 4(sp)
+    sw t1, 8(sp)
+    sw t2, 12(sp)
+    sw t3, 16(sp)
+    
+    # guardar os argumentos iniciais
+    mv t0, a0    
+    mv t1, a1     
+    mv t2, a2     
+    
+    # não é necessário validar o tamanho, pois os ficheiros ja sao sempre bem formados
+    
+    # abrir ficheiro
+    mv a0, t0    # Passa o endereço do nome do ficheiro para a0
+    li a1, 0     # Flag = 0 (Apenas Leitura)
+    li a2, 0
+    li a7, CONST_SYSCALL_OPEN
+    ecall
+    mv t3, a0        
+    
+    # ler ficheiro
+    mv a0, t3    
+    mv a1, t1 
+    mv a2, t2 
+    li a7, CONST_SYSCALL_READ 
+    ecall    # após o ecall, a0 contém o número de bytes lidos
+    
+    # fechar o ficheiro
+    mv a0, t3        
+    li a7, CONST_SYSCALL_CLOSE
+    ecall
+    
+    # restaurar a pilha, libertando o ra e os registos
+    lw ra, 0(sp)
+    lw t0, 4(sp)
+    lw t1, 8(sp)
+    lw t2, 12(sp)
+    lw t3, 16(sp)
+    addi sp, sp, 20
+    
+    # retornar
+    ret
 
 # Assumes the matrix is stored in the buffer as space-separated integers.
 # Assumes columns are separated by 1 space (' '), and rows by 1 newline ('\n').
