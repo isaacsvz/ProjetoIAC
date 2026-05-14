@@ -288,6 +288,7 @@ build_input_embeddings_matrix:
         lw ra, 0(sp)
         addi sp, sp, 8
         jr ra
+        
 
 # (in/out) a0: address of the output matrix to fill (int*)
 # (in)     a1: address of the first matrix (int*)
