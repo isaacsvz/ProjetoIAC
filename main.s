@@ -193,6 +193,50 @@ tokens_to_indices:
 # (in)     a3: number of tokens in the input (int)
 build_input_embeddings_matrix:
     # TODO
+    addi sp, sp, -8
+    sw a0, 4(sp)
+    sw ra, 0(sp)
+    loop_indices:
+        ble a3, x0, fim
+        addi sp, sp, -16        #guarda args originais & caller saved regs 
+        sw a0, 12(sp)
+        sw a1, 8(sp)
+        sw a2, 4(sp)
+        sw a3, 0(sp)
+        lw t2, 0(a2)            #load do indice
+        slli t3, t2, 4          #calcula linha da matriz:
+        add a1, a1, t3          #dim = 4, 1 elemento = 4 bytes, 4x4=16 -> slli 4
+        li a4, 4                #inicializa contador elementos antes de cada loop
+        jal ra, preenche_loop
+        lw a0, 12(sp)           #recupera args originais & caller saved
+        lw a1, 8(sp)
+        lw a2, 4(sp)
+        lw a3, 0(sp)
+        addi sp,sp, 16           
+        addi a0, a0, 16          #próxima linha da matriz final
+        addi a2, a2, 4           #próximo indice do vetor
+        addi a3, a3, -1          #-1 no contador de linhas preenchidas (=nr tokens)
+        j loop_indices
+    
+    #(in) a0: linha da matriz final a preencher
+    #(in) a1: linha do vocab a copiar
+    #(in) a4: elementos a copiar
+    preenche_loop:
+        ble a4, x0, fim_preenche
+        lw a2, 0(a1)
+        sw a2, 0(a0)
+        addi a1, a1, 4          #próximo elemento da linha do input
+        addi a0, a0, 4          #próximo elemento da linha da matriz final
+        addi a4, a4, -1         #contador elementos
+        j preenche_loop
+        
+    fim_preenche:
+        jr ra
+    fim:
+        lw a0, 4(sp)            #recupera endereço do início da matriz final
+        lw ra, 0(sp)
+        addi sp, sp, 8
+        jr ra
 
 # (in/out) a0: address of the output matrix to fill (int*)
 # (in)     a1: address of the first matrix (int*)
