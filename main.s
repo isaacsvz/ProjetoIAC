@@ -335,11 +335,12 @@ select_vector_in_matrix:
     mv a0, t0
     jr ra
 
+
 # (out) a0: index of the predicted token in the vocabulary (int)
 # (in)  a0: address of target vector (int*)
 # (in)  a1: vocabulary embeddings address (int*)
 # (in)  a2: number of tokens in vocabulary (int)
-decide_next_token:
+decide_nex_token:
     # TODO
 
 #############################################################################################################
