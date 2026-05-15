@@ -327,7 +327,7 @@ select_vector_in_matrix:
     lw ra, 0(sp)          #repor os args originais
     lw a4, 4(sp)
     lw a3, 8(sp)
-    lw a2, 12(sp)
+    lw a2, 12(sp)         
     lw a1, 16(sp) 
     addi sp, sp, 20
     slli t0, t0, 4        #calcular endereço da linha a obter (16 bytes <-> uma linha)
@@ -340,7 +340,7 @@ select_vector_in_matrix:
 # (in)  a0: address of target vector (int*)
 # (in)  a1: vocabulary embeddings address (int*)
 # (in)  a2: number of tokens in vocabulary (int)
-decide_nex_token:
+decide_next_token:
     # TODO
 
 #############################################################################################################
