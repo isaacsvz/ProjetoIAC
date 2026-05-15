@@ -230,6 +230,79 @@ read_file:
 parse_matrix_buffer:
     # TODO
 
+    addi sp, sp, -24
+    sw ra, 0(sp)
+    sw s0, 4(sp)    # ponteiro para matriz original (a1)
+    sw s1, 8(sp)    # ponteiro para matriz array (a0)
+    sw s2, 12(sp)    # contador de linhas
+    sw s3, 16(sp)    # flag para sinal do número (0 é positivo e 1 é negativo)
+    sw s4, 20(sp)    # número atualmente em análise   
+
+    mv s0, a1        
+    mv s1, a0     
+    li s2, 0         
+    li s3, 0 
+    li s4, 0
+
+loop:
+    lb t0, 0(s0)    # byte atual, em análise
+    
+    # casos em que byte não é dígito:
+    beq t0, x0, fim    # em caso de EOF (t0 = 0), termina
+    
+    li t1, CONST_CHAR_NEWLINE
+    beq t0, t1, prox_linha     # em caso de '\n' 
+    
+    li t2, CONST_CHAR_HYPHEN
+    beq t0, t2, negativo    # em caso de sinal negativo
+    
+    li t3, CONST_CHAR_SPACE
+    beq t0, t3, guarda_RAM        # em caso de espaço
+    
+    # se byte é dígito: n = n * 10 -48 bytes(representa o 0 na tabela ASCII)
+    li t4, CONST_CHAR_ZERO 
+    sub t0, t0, t4
+    li t5, 10
+    mul s4, s4, t5
+    add s4, s4, t0
+    addi s0, s0, 1    # incrementa o ponteiro
+    j loop
+ 
+negativo:
+    addi s3, s3, 1    # alteramos a flag para representar um negativo
+    addi s0, s0, 1    # incrementa o ponteiro
+    j loop
+    
+prox_linha:
+    addi s2, s2, 1    # adicionamos 1 ao contador de linhas
+    
+guarda_RAM:
+    beq s3, x0, guarda
+    sub s4, x0, s4
+
+guarda:
+    sw s4, 0(s1)
+    li s3, 0
+    li s4, 0    # resetar o número
+    addi s0, s0, 1    # avança um no buffer 
+    addi s1, s1, 4    # avança 4 bytes na matriz
+    j loop
+
+fim:
+    mv a1, s2
+    
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    lw s3, 16(sp)
+    lw s4, 20(sp)
+    addi sp, sp, 24
+
+    # retonar
+    ret
+
+    
 # Converts the input tokens into their corresponding indices in the vocabulary.
 # (in/out) a0: address of input indices vector to fill (int*)
 # (out)    a1: size of input indices vector (number of tokens in input)
