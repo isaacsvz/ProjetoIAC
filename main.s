@@ -315,7 +315,25 @@ compute_scores:
 # (in)  a3: #cols (int)
 # (in)  a4: target row
 select_vector_in_matrix:
-    # TODO
+    addi sp, sp, -20      #guardar os args originais 
+    sw a1, 16(sp)
+    sw a2, 12(sp)
+    sw a3, 8(sp)
+    sw a4, 4(sp)
+    sw ra, 0(sp)
+    mv a1, a4
+    jal ra, argmax
+    mv t0, a1             #deslocar o output do argmax 
+    lw ra, 0(sp)          #repor os args originais
+    lw a4, 4(sp)
+    lw a3, 8(sp)
+    lw a2, 12(sp)
+    lw a1, 16(sp) 
+    addi sp, sp, 20
+    slli t0, t0, 4        #calcular endereço da linha a obter (16 bytes <-> uma linha)
+    add t0, t0, a1        
+    mv a0, t0
+    jr ra
 
 # (out) a0: index of the predicted token in the vocabulary (int)
 # (in)  a0: address of target vector (int*)
