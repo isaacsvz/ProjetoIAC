@@ -371,7 +371,52 @@ build_input_embeddings_matrix:
 # (in)     a5: #rows of the second matrix (int)
 # (in)     a6: #columns of the second matrix (int)
 matrix_multiply:
-    # TODO
+    li t0,0 #inicializamos o identificador de linhas fora dos ciclos
+ 
+    
+mainloop:
+    li t1,0 #inicializamos o identificador de colunas(j)
+    blt t0,a2,secloop #enquanto o i for menor ás linhas da 1º matriz,roda os loops de j
+    j end # se ir for maior ou igual,acaba o ciclo
+    
+secloop:
+    li t2,0 #inicializamos k a 0 no inicio de cada loop secundario
+    li t3,0 #inicializamos a soma no inicio de cada loop secundario
+    blt t1,a6,thirdloop #enquanto j for menor que o n colunas,entra no ciclo
+    j secloopend #se não for,salta para o fim do segundo loop
+    
+thirdloop:
+    bge t2,a3,thirdloopend #se k maior ou igual as colunas da 1º matriz,acaba
+    slli t6,t0,4 #i indica a linha que vamos operar
+    slli t4,t2,2 # k indica a coluna dentro da linha 
+    add t6,t6,a1 #mete o pointer a apontar para a linha da 1º matriz
+    add t6,t6,t4 #soma os bytes da coluna desejada á linha
+    lw t4,0(t6) #vamos buscar o valor na linha e coluna desejada da 1º matriz
+    slli t6,t2,4 #k define a linha que vamos operar na 2ª matriz
+    slli t5,t1,2 #j define a coluna que vamos operar dentro da linha
+    add t6,t6,a4 #metemos o pointer a apontar para a linha
+    add t6,t6,t5 #somamos os bytes da coluna desejada ao pointer
+    lw t5,0(t6) #valor da linha e coluna desejada da segunda matriz
+    mul t6,t4,t5 #fazemos a multiplicação dos valores das matrizes
+    add t3,t3,t6 #a soma é a soma dos valores calculados no terceiro ciclo
+    addi t2,t2,1 #incrementamos o k
+    j thirdloop #saltamos de novo para o ciclo
+    
+thirdloopend:
+    slli t6,t0,4 #vemos a linha em que temos de guardar na matriz de saida
+    slli t4,t1,2 #vemos a coluna em que temos de guardar na matriz de saida
+    add t6,t6,a0 #apontamos para a linha de a0 que queremos guardar o valor
+    add t6,t6,t4 #apontamos para a coluna dentro da linha desejada para guardar o valor
+    sw t3,0(t6)  #guardamos o valor na posição desejada
+    addi t1,t1,1 #incrementamos o j,a variavel que controla o segundo loop
+    j secloop #saltamos de novo para o segundo loop
+
+secloopend:
+    addi t0,t0,1 #incrementamos o i,a variavel que controla o primeiro loop
+    j mainloop #saltamos para o primeiro loop
+    
+end:
+    jr ra #retornamos o valor de a0,a matriz já preenchida
 
 # (in/out) a0: address of the output scores vector to fill (int*)
 # (in)     a1: address of Q matrix (int*)
@@ -380,7 +425,49 @@ matrix_multiply:
 # (in)     a4: #columns of Q and K (int)
 # (in)     a5: target token index for which we want to compute the score (int)
 compute_scores:
-    # TODO
+    addi sp,sp,-32 #alocar espaço na stack
+    sw ra,0(sp) #guardar o endereço de retorno
+    sw s0,4(sp) #guardar s-regs
+    sw s1,8(sp)
+    sw s2,12(sp)
+    sw s3,16(sp)
+    sw s4,20(sp)
+    sw s5,24(sp)
+    sw s6,28(sp)
+    mv s3,a0 #por segurança,caso dot destrua,movemos os a-regs
+    mv s4,a3
+    mv s5,a4
+    mv s6,a2
+    li s0,0 #s0 vai ditar o ciclo do j
+    slli s1,a5,4 #multiplicamos o indice do token por 4
+    add s1,a1,s1 #metemos em s1 o adress do nosso alvo
+
+loop:
+    bge s0,s4,end #se o j for igual ou maior ao numero de linhas da matriz,acaba
+    slli s2,s0,4 #deslocação de linha em linha da matriz 
+    add s2,s2,s6 #endereço da linha que vamos avaliar
+    mv a1,s1 #movemos os endereços e o tamanho(estavam em s-regs) para os inputs da dot
+    mv a2,s2
+    mv a3,s5
+    jal ra,dot #chamamos a dot
+    slli t0,s0,2 #vamos determinar a posição na matriz final com base em j
+    add t0,s3,t0 #vamos mexer o ponteiro para a posição na matriz final
+    sw a1,0(t0) #damos store do valor recebido de dot(a1) na matriz final
+    addi s0,s0,1 #incrementamos o s0
+    j loop        #retomamos o loop
+    
+
+end:
+    lw ra,0(sp) #repomos os valores iniciais,cumprindo com a convenção
+    lw s0,4(sp)
+    lw s1,8(sp)
+    lw s2,12(sp)
+    lw s3,16(sp)
+    lw s4,20(sp)
+    lw s5,24(sp)
+    lw s6,28(sp)
+    addi sp,sp,32 #libertamos o espaço da pilha
+    jr ra
 
 # (out) a0: address of the selected vector (int*)
 # (in)  a1: address of matrix (int*)
