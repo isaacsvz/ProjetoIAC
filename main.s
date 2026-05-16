@@ -329,7 +329,7 @@ build_input_embeddings_matrix:
         sw a3, 0(sp)
         lw t2, 0(a2)            #load do indice
         slli t3, t2, 4          #calcula linha da matriz:
-        add a1, a1, t3          #dim = 4, 1 elemento = 4 bytes, 4x4=16 -> slli 4
+        add a1, a1, t3          #1 linha => 4 elementos => 16 bytes (slli (...) 4)
         li a4, 4                #inicializa contador elementos antes de cada loop
         jal ra, preenche_loop
         lw a0, 12(sp)           #recupera args originais & caller saved
@@ -490,8 +490,8 @@ select_vector_in_matrix:
     lw a2, 12(sp)         
     lw a1, 16(sp) 
     addi sp, sp, 20
-    slli t0, t0, 4        #calcular endereço da linha a obter (16 bytes <-> uma linha)
-    add t0, t0, a1        
+    slli t0, t0, 4        #calcular endereço da linha a obter
+    add t0, t0, a1        #linha => 4 elementos => 16 bytes + a1
     mv a0, t0
     jr ra
 
@@ -501,7 +501,40 @@ select_vector_in_matrix:
 # (in)  a1: vocabulary embeddings address (int*)
 # (in)  a2: number of tokens in vocabulary (int)
 decide_next_token:
-    # TODO
+    mv s2, a2                #limite do loop (nr de linhas no vocab)
+    mv s0, x0                
+    li a4, 0                 
+    addi sp, sp, -4          #guarda o ra original
+    sw ra, 0(sp)
+    loop:
+        bge s0, s2, fim          #guarda os args originais & caller saved regs
+        sw a0, 8(sp)
+        sw a1, 4(sp)    
+        sw a2, 0(sp)
+        mv a2, a0                #prepara os args de dot
+        li a3, CONST_DIMENSION
+        jal ra, dot
+        mv s3, a1                #guarda o output 
+        lw a0, 8(sp)             
+        lw a1, 4(sp)
+        lw a2, 0(sp)
+        bgt s3, s4, atualiza     #compara com o output com o max atual
+        addi a1, a1, 16
+        addi s0, s0, 1
+        j loop
+    
+    atualiza:
+        mv s4, s3                #atualiza valor do maior
+        mv s1, s0                #atualiza indice do maior
+        addi a1, a1, 16          #próxima linha (1 linha => 4 elementos => 16 bytes)
+        addi s0, s0, 1
+        j loop
+     
+    fim:
+        lw ra, 0(sp)             #repõe o ra original
+        addi sp, sp, 4
+        mv a0, s1                #prepara o output
+        jr ra                       
 
 #############################################################################################################
 # Dot product and argmax helper functions.
