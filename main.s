@@ -501,13 +501,20 @@ select_vector_in_matrix:
 # (in)  a1: vocabulary embeddings address (int*)
 # (in)  a2: number of tokens in vocabulary (int)
 decide_next_token:
+    addi sp, sp, -24         #salvaguardar os callee saved
+    sw s0, 20(sp)
+    sw s1, 16(sp)
+    sw s2, 12(sp)
+    sw s3, 8(sp)
+    sw s4, 4(sp)
+    sw ra, 0(sp)
+
     mv s2, a2                #limite do loop (nr de linhas no vocab)
     mv s0, x0                
     li a4, 0                 
-    addi sp, sp, -4          #guarda o ra original
-    sw ra, 0(sp)
     loop:
-        bge s0, s2, fim          #guarda os args originais & caller saved regs
+        bge s0, s2, fim          #guarda os args originais - caller saved regs
+        addi sp, sp, -12
         sw a0, 8(sp)
         sw a1, 4(sp)    
         sw a2, 0(sp)
@@ -518,22 +525,28 @@ decide_next_token:
         lw a0, 8(sp)             
         lw a1, 4(sp)
         lw a2, 0(sp)
+        addi sp, sp, 12
         bgt s3, s4, atualiza     #compara com o output com o max atual
-        addi a1, a1, 16
+        addi a1, a1, 16          #próxima linha (1 linha => 4 elementos => 16 bytes)
         addi s0, s0, 1
         j loop
     
     atualiza:
         mv s4, s3                #atualiza valor do maior
         mv s1, s0                #atualiza indice do maior
-        addi a1, a1, 16          #próxima linha (1 linha => 4 elementos => 16 bytes)
+        addi a1, a1, 16          
         addi s0, s0, 1
         j loop
-     
+    
     fim:
-        lw ra, 0(sp)             #repõe o ra original
-        addi sp, sp, 4
         mv a0, s1                #prepara o output
+        lw ra, 0(sp)             #repõe os callee saved
+        sw s4, 4(sp)
+        sw s3, 8(sp)
+        sw s2, 12(sp)
+        sw s1, 16(sp)
+        sw s0, 20(sp)
+        addi sp, sp, 24
         jr ra                       
 
 #############################################################################################################
