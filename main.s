@@ -76,42 +76,61 @@ main:
     # Read W_Q matrix
     ###########################################################################
     # TODO
+    la a0, W_Q_FILENAME
+    la a1, MATRIX_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
 
     ###########################################################################
     # Parse W_Q matrix from buffer
     ###########################################################################
     # TODO
-
+    la a0, W_Q_MATRIX
+    jal ra, parse_matrix_buffer
     ###########################################################################
     # Read W_K matrix
     ###########################################################################
     # TODO
+    la a0, W_K_FILENAME
+    la a1, MATRIX_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
 
     ###########################################################################
     # Parse W_K matrix from buffer
     ###########################################################################
     # TODO
-
+    la a0, W_K_MATRIX
+    jal ra, parse_matrix_buffer
     ###########################################################################
     # Read W_V matrix
     ###########################################################################
     # TODO
+    la a0, W_V_FILENAME
+    la a1, MATRIX_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
 
     ###########################################################################
     # Parse W_V matrix from buffer
     ###########################################################################
     # TODO
-
+    la a0, W_V_MATRIX
+    jal ra, parse_matrix_buffer
     ###########################################################################
     # Read embeddings matrix
     ###########################################################################
     # TODO
-
+    la a0, EMBEDDINGS_FILENAME
+    la a1, MATRIX_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
     ###########################################################################
     # Parse vocabulary embeddings matrix from buffer
     ###########################################################################
     # TODO
-
+    la a0, VOCAB_EMBEDDINGS_MATRIX
+    jal ra, parse_matrix_buffer
     ###########################################################################
     # Convert input tokens to indices
     ###########################################################################
