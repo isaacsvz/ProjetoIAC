@@ -106,6 +106,12 @@ main:
     # Read embeddings matrix
     ###########################################################################
     # TODO
+    
+    la a0, INPUT_EMBEDDINGS_MATRIX
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, INPUT_INDICES_VECTOR
+    la a3, INPUT_TOTAL_TOKENS
+    jal ra, build_input_embeddings_matrix
 
     ###########################################################################
     # Parse vocabulary embeddings matrix from buffer
@@ -156,7 +162,12 @@ main:
     # Pick the next token in the vocabulary with the highest score
     ###########################################################################
     # TODO
-
+    
+    # a0 já tem o target vector da função anterior
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, VOCAB_TOTAL_TOKENS
+    jal ra, decide_next_token
+    
     ###########################################################################
     # Terminate program successfully
     ###########################################################################
