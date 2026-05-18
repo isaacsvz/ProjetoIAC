@@ -295,7 +295,7 @@ loop:
     beq t0, t2, negativo    # em caso de sinal negativo
     
     li t3, CONST_CHAR_SPACE
-    beq t0, t3, guarda_RAM        # em caso de espaço
+    beq t0, t3, usa_flag        # em caso de espaço
     
     # se byte é dígito: n = n * 10 -48 bytes(representa o 0 na tabela ASCII)
     li t4, CONST_CHAR_ZERO 
@@ -314,11 +314,11 @@ negativo:
 prox_linha:
     addi s2, s2, 1    # adicionamos 1 ao contador de linhas
     
-guarda_RAM:
-    beq s3, x0, guarda
+usa_flag:
+    beq s3, x0, guarda_RAM
     sub s4, x0, s4
 
-guarda:
+guarda_RAM:
     sw s4, 0(s1)
     li s3, 0
     li s4, 0    # resetar o número
@@ -348,6 +348,87 @@ fim:
 # (in)     a3: address to vocabulary buffer
 tokens_to_indices:
     # TODO
+    addi sp, sp, -24
+    sw ra, 0(sp)
+    sw s0, 4(sp)    # ponteiro para a palavra
+    sw s1, 8(sp)    # ponteiro para o vetor a preencher
+    sw s2, 12(sp)    # contador de palavras
+    sw s3, 16(sp)    # indice do vocabulário
+    sw s4, 20(sp)    # ponteiro para o início do vocabulário
+    
+    mv s0, a2    
+    mv s1, a0    
+    li s2, 0      
+    mv s4, a3 
+    
+    
+loop: # percorre as palavras uma a uma
+    lb   t0, 0(s0)    # lê primeiro byte da palavra
+    beq  t0, x0, fim    # em caso de EOF (t0 = 0), termina
+    
+    li s3, 0    # índice atual inicializado
+    mv t1, s4
+
+
+vocabulario: # percorre palvra a palavra do vocabulário
+    mv t2, s0
+    mv t3, t1
+
+
+comparacao:
+    # carrega os caracteres atuais
+    li t4, CONST_CHAR_NEWLINE
+    lb t5, 0(t2)
+    lb t6, 0(t3)
+    
+    bne t5, t6, diferentes    # caracteres diferentes
+    # caracteres iguais
+    beq t5, t4, iguais    # são os dois /n
+    # se não são os dois /n
+    # avançamos na comparação 
+    addi t2, t2, 1
+    addi t3, t3, 1
+    j comparacao
+    
+    
+iguais:
+    sw s3, 0(s1)    # guarda o índice
+    addi s1, s1, 4    # avança para a próximo indice vazio do vetor retorno
+    addi s2, s2, 1    # incrementa o numero de palavras
+    
+    addi s0, t2, 1    #avança para a próxima palavra
+    j loop
+    
+    
+diferentes:
+    lb t6, 0(t3)            # lê o caracter do vocabulário
+    addi t1, t1, 1          # avança o ponteiro principal em 1 byte
+    
+    # procura o fim da palavra atual
+    beq t6, t4, avanca_voc    # se for '\n', atualiza o índice
+    j diferentes
+
+
+avanca_voc:
+    addi s3, s3, 1    # incrementa a palavra do vocabulário
+    j vocabulario    # compara a próxima palavra
+
+ 
+fim:
+    mv   a1, s2    # devolve número de palavras
+
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    lw s3, 16(sp)
+    lw s4, 20(sp)
+    addi sp, sp, 24
+    
+    # retornar
+    ret
+
+
 
 # (in/out) a0: address of the output matrix to fill (int*)
 # (in)     a1: address of the vocabulary embeddings matrix (int*)
