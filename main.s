@@ -106,12 +106,6 @@ main:
     # Read embeddings matrix
     ###########################################################################
     # TODO
-    
-    la a0, INPUT_EMBEDDINGS_MATRIX
-    la a1, VOCAB_EMBEDDINGS_MATRIX
-    la a2, INPUT_INDICES_VECTOR
-    la a3, INPUT_TOTAL_TOKENS
-    jal ra, build_input_embeddings_matrix
 
     ###########################################################################
     # Parse vocabulary embeddings matrix from buffer
@@ -127,22 +121,47 @@ main:
     # Build input embeddings matrix
     ###########################################################################
     # TODO
-
+    la a0, INPUT_EMBEDDINGS_MATRIX
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, INPUT_INDICES_VECTOR
+    li a3, INPUT_TOTAL_TOKENS
+    jal ra, build_input_embeddings_matrix
     ###########################################################################
     # Build matrix Q
     ###########################################################################
     # TODO
-
+    la a0, Q_MATRIX
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION 
+    la a4, W_Q_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION
+    jal ra, matrix_multiply
     ###########################################################################
     # Build matrix K
     ###########################################################################
     # TODO
-
+    la a0, K_MATRIX
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION 
+    la a4, W_K_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION
+    jal ra, matrix_multiply
     ###########################################################################
     # Build matrix V
     ###########################################################################
     # TODO
-
+    la a0, V_MATRIX
+    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION 
+    la a4, W_V_MATRIX
+    la a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION
+    jal ra, matrix_multiply
     ###########################################################################
     # Compute scores for the last input token
     ###########################################################################
@@ -152,11 +171,19 @@ main:
     # Get the highest score index using argmax
     ###########################################################################
     # TODO
+    mv a1, a0                       #output to compute scores para a1 (prep para argmax) 
+    li a2, INPUT_TOTAL_TOKENS       #len do arr equivale ao num de palavras
+    jal ra, argmax
 
     ###########################################################################
     # Select chosen vector in V using the index from argmax
     ###########################################################################
     # TODO
+    mv a4, a1                       #output to argmax para a4 (prep do select)
+    la a1, V_MATRIX
+    li a2, INPUT_TOTAL_TOKENS
+    li a3, CONST_DIMENSION
+    jal ra, select_vector_in_matrix
 
     ###########################################################################
     # Pick the next token in the vocabulary with the highest score
@@ -165,9 +192,9 @@ main:
     
     # a0 já tem o target vector da função anterior
     la a1, VOCAB_EMBEDDINGS_MATRIX
-    la a2, VOCAB_TOTAL_TOKENS
+    li a2, VOCAB_TOTAL_TOKENS
     jal ra, decide_next_token
-    
+
     ###########################################################################
     # Terminate program successfully
     ###########################################################################
