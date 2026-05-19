@@ -66,12 +66,18 @@ main:
     # Read vocabulary
     ###########################################################################
     # TODO
-
+    la a0, VOCABULARY_FILENAME
+    la a1, VOCAB_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
     ###########################################################################
     # Read input
     ###########################################################################
     # TODO
-
+    la a0, INPUT_FILENAME
+    la a1, INPUT_BUFFER
+    li a2, CONST_BUFFER_SIZE
+    jal ra, read_file
     ###########################################################################
     # Read W_Q matrix
     ###########################################################################
@@ -131,11 +137,18 @@ main:
     # TODO
     la a0, VOCAB_EMBEDDINGS_MATRIX
     jal ra, parse_matrix_buffer
+    la a0, VOCAB_TOTAL_TOKENS
+    sw a1, 0(a0)                #guarda total de tokens do vocab
     ###########################################################################
     # Convert input tokens to indices
     ###########################################################################
     # TODO
-
+    la a0, INPUT_INDICES_VECTOR
+    la a2, INPUT_BUFFER
+    la a3, VOCAB_BUFFER
+    jal ra, tokens_to_indices
+    la a0, INPUT_TOTAL_TOKENS
+    sw a1, 0(a0)                #guarda o num de tokens do input
     ###########################################################################
     # Build input embeddings matrix
     ###########################################################################
@@ -150,11 +163,11 @@ main:
     ###########################################################################
     # TODO
     la a0, Q_MATRIX
-    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a1, INPUT_EMBEDDINGS_MATRIX
     la a2, INPUT_TOTAL_TOKENS
     li a3, CONST_DIMENSION 
     la a4, W_Q_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
@@ -162,11 +175,11 @@ main:
     ###########################################################################
     # TODO
     la a0, K_MATRIX
-    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a1, INPUT_EMBEDDINGS_MATRIX
     la a2, INPUT_TOTAL_TOKENS
     li a3, CONST_DIMENSION 
     la a4, W_K_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
@@ -174,11 +187,11 @@ main:
     ###########################################################################
     # TODO
     la a0, V_MATRIX
-    la a1, VOCAB_EMBEDDINGS_MATRIX
+    la a1, INPUT_EMBEDDINGS_MATRIX
     la a2, INPUT_TOTAL_TOKENS
     li a3, CONST_DIMENSION 
     la a4, W_V_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
