@@ -163,7 +163,8 @@ main:
     # TODO
     la a0, Q_MATRIX
     la a1, INPUT_EMBEDDINGS_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la t2, INPUT_TOTAL_TOKENS
+    lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_Q_MATRIX
     la a2, CONST_DIMENSION
@@ -175,7 +176,8 @@ main:
     # TODO
     la a0, K_MATRIX
     la a1, INPUT_EMBEDDINGS_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la t2, INPUT_TOTAL_TOKENS
+    lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_K_MATRIX
     la a2, CONST_DIMENSION
@@ -187,7 +189,8 @@ main:
     # TODO
     la a0, V_MATRIX
     la a1, INPUT_EMBEDDINGS_MATRIX
-    la a2, INPUT_TOTAL_TOKENS
+    la t2, INPUT_TOTAL_TOKENS
+    lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_V_MATRIX
     la a2, CONST_DIMENSION
