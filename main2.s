@@ -167,7 +167,7 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_Q_MATRIX
-    la a2, CONST_DIMENSION
+    li a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
@@ -180,7 +180,7 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_K_MATRIX
-    la a2, CONST_DIMENSION
+    li a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
@@ -193,7 +193,7 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_V_MATRIX
-    la a2, CONST_DIMENSION
+    li a2, CONST_DIMENSION
     li a3, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
