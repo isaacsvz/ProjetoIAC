@@ -460,7 +460,7 @@ build_input_embeddings_matrix:
     sw a0, 4(sp)
     sw ra, 0(sp)
     loop_indices:
-        ble a3, x0, fim
+        ble a3, x0, fim_buildE
         addi sp, sp, -16        #guarda args originais & caller saved regs 
         sw a0, 12(sp)
         sw a1, 8(sp)
@@ -495,7 +495,7 @@ build_input_embeddings_matrix:
         
     fim_preenche:
         jr ra
-    fim:
+    fim_buildE:
         lw a0, 4(sp)            #recupera endereço do início da matriz final
         lw ra, 0(sp)
         addi sp, sp, 8
@@ -639,7 +639,7 @@ decide_next_token:
     mv s0, x0                
     li a4, 0                 
     loop:
-        bge s0, s2, fim          #guarda os args originais - caller saved regs
+        bge s0, s2, fim_decide          #guarda os args originais - caller saved regs
         addi sp, sp, -12
         sw a0, 8(sp)
         sw a1, 4(sp)    
@@ -664,7 +664,7 @@ decide_next_token:
         addi s0, s0, 1
         j loop
     
-    fim:
+    fim_decide:
         mv a0, s1                #prepara o output
         lw ra, 0(sp)             #repõe os callee saved
         sw s4, 4(sp)
