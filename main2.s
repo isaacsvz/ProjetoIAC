@@ -154,7 +154,8 @@ main:
     la a0, INPUT_EMBEDDINGS_MATRIX
     la a1, VOCAB_EMBEDDINGS_MATRIX
     la a2, INPUT_INDICES_VECTOR
-    li a3, INPUT_TOTAL_TOKENS
+    la t3, INPUT_TOTAL_TOKENS
+    lw a3, 0(t3)
     jal ra, build_input_embeddings_matrix
     ###########################################################################
     # Build matrix Q
