@@ -609,6 +609,7 @@ loop:
     
 
 end:
+     mv a0,s3
     lw ra,0(sp) #repomos os valores iniciais,cumprindo com a convenção
     lw s0,4(sp)
     lw s1,8(sp)
