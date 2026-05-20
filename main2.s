@@ -167,8 +167,8 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_Q_MATRIX
-    li a2, CONST_DIMENSION
-    li a3, CONST_DIMENSION
+    li a5, CONST_DIMENSION
+    li a6, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
     # Build matrix K
@@ -180,8 +180,8 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_K_MATRIX
-    li a2, CONST_DIMENSION
-    li a3, CONST_DIMENSION
+    li a5, CONST_DIMENSION
+    li a6, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
     # Build matrix V
@@ -193,8 +193,8 @@ main:
     lw a2, 0(t2)
     li a3, CONST_DIMENSION 
     la a4, W_V_MATRIX
-    li a2, CONST_DIMENSION
-    li a3, CONST_DIMENSION
+    li a5, CONST_DIMENSION
+    li a6, CONST_DIMENSION
     jal ra, matrix_multiply
     ###########################################################################
     # Compute scores for the last input token
@@ -601,6 +601,7 @@ loop:
     
 
 end:
+    mv a0,s3
     lw ra,0(sp) #repomos os valores iniciais,cumprindo com a convenção
     lw s0,4(sp)
     lw s1,8(sp)
