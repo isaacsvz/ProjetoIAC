@@ -240,6 +240,10 @@ main:
     la t2, VOCAB_TOTAL_TOKENS
     lw a2, 0(t2)
     jal ra, decide_next_token
+    
+    mv a1, a0
+    la a0, VOCAB_BUFFER
+    jal ra, print_word
     ###########################################################################
     # Terminate program successfully
     ###########################################################################
@@ -691,6 +695,42 @@ decide_next_token:
         addi sp, sp, 24
         jr ra                       
 
+#(in) a0: adress of vocab buffer
+#(in) a1: index of predicted token
+print_word: 
+    addi sp, sp,-16
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw ra, 12(sp)
+    
+    mv s0, a0
+    mv s1, a1
+    li t3, 0            #contador de newline's
+    li s2, CONST_CHAR_NEWLINE
+    loop_printword:
+        lb t1, 0(s0)
+        beq t1, s2, incrementa
+        addi s0, s0, 1
+        j loop_printword
+        
+        
+    incrementa:
+        addi t3, t3, 1
+        addi s0, s0, 1
+        beq s1, t3, imprime
+        j loop_printword
+    
+    imprime:
+        mv a0, s0
+        jal ra, print_predicted_token
+        lw ra, 12(sp)
+        lw s2, 8(sp)
+        lw s1, 4(sp)
+        lw s0, 0(sp)
+        addi sp, sp, 16
+        jr ra
+    
 #############################################################################################################
 # Dot product and argmax helper functions.
 #############################################################################################################
