@@ -33,13 +33,6 @@
 # Data section with static memory reservations.
 # Feel free to add more if needed.
 ###########################################################################
-VOCABULARY_FILENAME:     .string "vocab.txt"
-EMBEDDINGS_FILENAME:     .string "embeddings.txt"
-INPUT_FILENAME:          .string "input.txt"
-
-W_Q_FILENAME:            .string "W_Q.txt"
-W_K_FILENAME:            .string "W_K.txt"
-W_V_FILENAME:            .string "W_V.txt"
 
 VOCAB_BUFFER:            .zero CONST_BUFFER_SIZE                              # Contents of the vocabulary file
 INPUT_BUFFER:            .zero CONST_BUFFER_SIZE                              # Contents of the input file
@@ -59,6 +52,14 @@ W_V_MATRIX:              .zero (CONST_DIMENSION * CONST_DIMENSION * 4)        # 
 Q_MATRIX:                .zero (CONST_MAX_INPUT_TOKENS * CONST_DIMENSION * 4) # Q matrix (#tokens x dimension x 4 bytes)
 K_MATRIX:                .zero (CONST_MAX_INPUT_TOKENS * CONST_DIMENSION * 4) # K matrix (#tokens x dimension x 4 bytes)
 V_MATRIX:                .zero (CONST_MAX_INPUT_TOKENS * CONST_DIMENSION * 4) # V matrix (#tokens x dimension x 4 bytes)
+
+VOCABULARY_FILENAME:     .string "C:\teste_read_file\vocab.txt"
+EMBEDDINGS_FILENAME:     .string "C:\teste_read_file\embeddings.txt"
+INPUT_FILENAME:          .string "C:\teste_read_file\input.txt"
+
+W_Q_FILENAME:            .string "C:\teste_read_file\W_Q.txt"
+W_K_FILENAME:            .string "C:\teste_read_file\W_K.txt"
+W_V_FILENAME:            .string "C:\teste_read_file\W_V.txt"
 
 .text
 main:
@@ -91,6 +92,7 @@ main:
     ###########################################################################
     # TODO
     la a0, W_Q_MATRIX
+    la a1, MATRIX_BUFFER
     jal ra, parse_matrix_buffer
     ###########################################################################
     # Read W_K matrix
@@ -105,6 +107,7 @@ main:
     ###########################################################################
     # TODO
     la a0, W_K_MATRIX
+    la a1, MATRIX_BUFFER
     jal ra, parse_matrix_buffer
     ###########################################################################
     # Read W_V matrix
@@ -119,6 +122,7 @@ main:
     ###########################################################################
     # TODO
     la a0, W_V_MATRIX
+    la a1, MATRIX_BUFFER
     jal ra, parse_matrix_buffer
     ###########################################################################
     # Read embeddings matrix
@@ -133,6 +137,7 @@ main:
     ###########################################################################
     # TODO
     la a0, VOCAB_EMBEDDINGS_MATRIX
+    la a1, MATRIX_BUFFER
     jal ra, parse_matrix_buffer
     la a0, VOCAB_TOTAL_TOKENS
     sw a1, 0(a0)                #guarda total de tokens do vocab
@@ -200,7 +205,14 @@ main:
     # Compute scores for the last input token
     ###########################################################################
     # TODO
-
+    la a0, SCORES_VECTOR
+    la a1, Q_MATRIX
+    la a2, K_MATRIX
+    la t3, INPUT_TOTAL_TOKENS
+    lw a3, 0(t3)
+    li a4, CONST_DIMENSION
+    addi a5, a3, -1
+    jal compute_scores 
     ###########################################################################
     # Get the highest score index using argmax
     ###########################################################################
@@ -387,9 +399,9 @@ tokens_to_indices:
     mv s4, a3 
     
     
-loop: # percorre as palavras uma a uma
+loop_tki: # percorre as palavras uma a uma
     lb   t0, 0(s0)    # lê primeiro byte da palavra
-    beq  t0, x0, fim    # em caso de EOF (t0 = 0), termina
+    beq  t0, x0, fim_tki    # em caso de EOF (t0 = 0), termina
     
     li s3, 0    # índice atual inicializado
     mv t1, s4
@@ -422,11 +434,11 @@ iguais:
     addi s2, s2, 1    # incrementa o numero de palavras
     
     addi s0, t2, 1    #avança para a próxima palavra
-    j loop
+    j loop_tki
     
     
 diferentes:
-    lb t6, 0(t3)            # lê o caracter do vocabulário
+    lb t6, 0(t1)            # lê o caracter do vocabulário
     addi t1, t1, 1          # avança o ponteiro principal em 1 byte
     
     # procura o fim da palavra atual
@@ -439,7 +451,7 @@ avanca_voc:
     j vocabulario    # compara a próxima palavra
 
  
-fim:
+fim_tki:
     mv   a1, s2    # devolve número de palavras
 
     lw ra, 0(sp)
@@ -585,8 +597,8 @@ compute_scores:
     slli s1,a5,4 #multiplicamos o indice do token por 4
     add s1,a1,s1 #metemos em s1 o adress do nosso alvo
 
-loop:
-    bge s0,s4,end #se o j for igual ou maior ao numero de linhas da matriz,acaba
+loop_compute:
+    bge s0,s4,end_compute #se o j for igual ou maior ao numero de linhas da matriz,acaba
     slli s2,s0,4 #deslocação de linha em linha da matriz 
     add s2,s2,s6 #endereço da linha que vamos avaliar
     mv a1,s1 #movemos os endereços e o tamanho(estavam em s-regs) para os inputs da dot
@@ -597,10 +609,10 @@ loop:
     add t0,s3,t0 #vamos mexer o ponteiro para a posição na matriz final
     sw a1,0(t0) #damos store do valor recebido de dot(a1) na matriz final
     addi s0,s0,1 #incrementamos o s0
-    j loop        #retomamos o loop
+    j loop_compute        #retomamos o loop
     
 
-end:
+end_compute:
     mv a0,s3
     lw ra,0(sp) #repomos os valores iniciais,cumprindo com a convenção
     lw s0,4(sp)
@@ -642,7 +654,7 @@ decide_next_token:
     mv s2, a2                #limite do loop (nr de linhas no vocab)
     mv s0, x0                
     li a4, 0                 
-    loop:
+    loop_decide:
         bge s0, s2, fim_decide          #guarda os args originais - caller saved regs
         addi sp, sp, -12
         sw a0, 8(sp)
@@ -659,14 +671,14 @@ decide_next_token:
         bgt s3, s4, atualiza     #compara com o output com o max atual
         addi a1, a1, 16          #próxima linha (1 linha => 4 elementos => 16 bytes)
         addi s0, s0, 1
-        j loop
+        j loop_decide
     
     atualiza:
         mv s4, s3                #atualiza valor do maior
         mv s1, s0                #atualiza indice do maior
         addi a1, a1, 16          
         addi s0, s0, 1
-        j loop
+        j loop_decide
     
     fim_decide:
         mv a0, s1                #prepara o output
